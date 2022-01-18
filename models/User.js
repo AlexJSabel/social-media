@@ -10,8 +10,9 @@ const UserSchema = new Schema(
     },
     email: {
       type: String,
-      required: true,
-      trim: true
+      required: 'Please enter a valid email address.',
+      unique: true,
+      match: [/^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/]
     },
     thoughts: [
       {
@@ -21,36 +22,24 @@ const UserSchema = new Schema(
     ],
     friends: [
       {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
+          type: Schema.Types.ObjectId,
+          ref: 'User'
       }
-    ],
-    toppings: [],
-    comments: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Thought'
-      }
-    ]
-  },
-  {
-    toJSON: {
-      virtuals: true,
-      getters: true
-    },
-    // prevents virtuals from creating duplicate of _id as `id`
-    id: false
+  ]
+},
+{
+  toJSON: {
+      virtuals: true
   }
-);
+})
 
-// get total count of friends and replies on retrieval
-UserSchema.virtual('friendCount').get(function() {
-  return this.count.reduce(
-    (total, count) => total + count.friends.length + 1,
-    0
-  );
-});
-
+// create the User model using the UserSchema
 const User = model('User', UserSchema);
 
+// get total friendCount
+UserSchema.virtual('friendCount').get(function() {
+  return this.friends.length;
+});
+
+// export the user model
 module.exports = User;
